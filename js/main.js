@@ -8,29 +8,37 @@ const agendeBtn = document.getElementById('agendeBtn');
 const closeBtns = document.querySelectorAll('.close');
 
 // Open Login Modal
-loginBtn.addEventListener('click', () => {
-    loginModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-});
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        loginModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+}
 
 // Open Signup Modal
-signupBtn.addEventListener('click', () => {
-    signupModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-});
+if (signupBtn) {
+    signupBtn.addEventListener('click', () => {
+        signupModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+}
 
 // Agendamento button opens Signup
-agendeBtn.addEventListener('click', () => {
-    signupModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-});
+if (agendeBtn) {
+    agendeBtn.addEventListener('click', () => {
+        signupModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+}
 
 // Close Modals
 closeBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
         const modal = e.target.closest('.modal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
     });
 });
 
@@ -136,7 +144,7 @@ if (signupForm) {
     signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const inputs = signupForm.querySelectorAll('input, textarea');
+        const inputs = signupForm.querySelectorAll('input:not([type="checkbox"]), textarea');
         let isValid = true;
         
         // Check all fields
@@ -148,6 +156,13 @@ if (signupForm) {
                 input.style.borderColor = '#E0E0E0';
             }
         });
+        
+        // Check terms checkbox
+        const termsCheck = document.getElementById('termsCheck');
+        if (termsCheck && !termsCheck.checked) {
+            isValid = false;
+            alert('Por favor, aceite os Termos de Uso e Política de Privacidade');
+        }
         
         if (!isValid) {
             alert('Por favor, preencha todos os campos');
@@ -163,8 +178,8 @@ if (signupForm) {
             return;
         }
         
-        if (password.length < 6) {
-            alert('A senha deve ter no mínimo 6 caracteres');
+        if (password.length < 8) {
+            alert('A senha deve ter no mínimo 8 caracteres');
             return;
         }
         
@@ -188,6 +203,9 @@ if (contactForm) {
         inputs.forEach(input => {
             if (!input.value) {
                 isValid = false;
+                input.style.borderColor = '#ff5252';
+            } else {
+                input.style.borderColor = '#E0E0E0';
             }
         });
         
@@ -197,7 +215,7 @@ if (contactForm) {
         }
         
         // Email validation
-        const email = inputs[1].value;
+        const email = contactForm.querySelector('input[type="email"]').value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
         if (!emailRegex.test(email)) {
@@ -213,28 +231,26 @@ if (contactForm) {
 // ==================== NAVIGATION ====================
 
 const navLinks = document.querySelectorAll('.nav-link');
-
-navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        // Close mobile menu if open
-        const navMenu = document.querySelector('.nav-menu');
-        if (navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-        }
-    });
-});
-
-// Mobile menu toggle
-const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
+const hamburger = document.getElementById('hamburger');
 
 if (hamburger) {
     hamburger.addEventListener('click', () => {
         navMenu.classList.toggle('active');
+        hamburger.classList.toggle('active');
     });
 }
 
-// ==================== SCROLL EFFECTS ====================
+navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        if (navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+    });
+});
+
+// ==================== SCROLL EFFECTS ==================== 
 
 // Navbar scroll effect
 let lastScroll = 0;
@@ -250,19 +266,6 @@ window.addEventListener('scroll', () => {
     }
     
     lastScroll = currentScroll;
-});
-
-// ==================== LOADING SCREEN ====================
-
-window.addEventListener('load', () => {
-    const loadingScreen = document.getElementById('loadingScreen');
-    // The loading screen will auto-hide after 2.5s due to CSS animation
-    // This ensures it stays visible even if page loads quickly
-    setTimeout(() => {
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
-    }, 2500);
 });
 
 // ==================== ANIMATIONS ON SCROLL ====================
@@ -290,13 +293,23 @@ serviceCards.forEach(card => {
     observer.observe(card);
 });
 
+// Observe about cards
+const aboutCards = document.querySelectorAll('.about-card');
+aboutCards.forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(card);
+});
+
 // ==================== SMOOTH SCROLL ====================
 
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
+        const href = this.getAttribute('href');
+        if (href !== '#' && document.querySelector(href)) {
+            e.preventDefault();
+            const target = document.querySelector(href);
             target.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
@@ -370,6 +383,15 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('mousedown', () => {
     document.body.classList.remove('using-keyboard');
+});
+
+// Close modals with ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        loginModal.style.display = 'none';
+        signupModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 });
 
 // ==================== CONSOLE MESSAGES ====================
